@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Scan output and runtime logs
+runs/
+*.log
+
+# Large external binaries (over 50MB)
+tools/cloudflared.exe
+
+# Local configuration and private API keys
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Editor and agent workspaces
+.agents/
+.dshskills/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

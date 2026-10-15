@@ -1,0 +1,5 @@
+# Development dependencies: the test suite only.
+#
+# fastapi's TestClient needs httpx, which is already a runtime dependency.
+-r requirements.txt
+pytest>=8.0

@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ai-dast-core — Web DAST Console</title>
+<style>
+  :root {
+    --bg: #0f1216;
+    --panel: #171b21;
+    --panel-2: #1e232b;
+    --line: #2a313b;
+    --text: #e6e9ee;
+    --muted: #8b95a5;
+    --accent: #4c9aea;
+    --critical: #d64550;
+    --high: #e8734a;
+    --medium: #e0b341;
+    --low: #56a8d8;
+    --info: #7d8899;
+    --ok: #4caf7d;
+    --radius: 8px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    padding: 16px 24px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    background: var(--panel);
+  }
+  header h1 { margin: 0; font-size: 16px; letter-spacing: .2px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  header .spacer { flex: 1; }
+  .warn {
+    background: #2a1f14; border-bottom: 1px solid #46341f; color: #e8c08a;
+    padding: 9px 24px; font-size: 12.5px;
+  }
+  main { padding: 20px 24px 60px; max-width: 1280px; margin: 0 auto; }
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+  }
+  .card h2 {
+    margin: 0 0 12px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--muted); font-weight: 600;
+  }
+  label { display: block; margin: 10px 0 4px; font-size: 12px; color: var(--muted); }
+  input[type=text], input[type=password], input[type=number], select {
+    width: 100%; padding: 8px 10px; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 6px; color: var(--text);
+    font-family: var(--mono); font-size: 13px;
+  }
+  input:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; min-width: 0; }
+  button {
+    padding: 9px 16px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--text); cursor: pointer;
+    font-size: 13px; font-weight: 500;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.1); }
+  button.danger { color: var(--high); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .hint { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 99px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+  }
+  .pill.queued { background: #2b3240; color: #96a3b8; }
+  .pill.running { background: #1d3a55; color: #7fc0f5; }
+  .pill.completed { background: #1c3a2c; color: #6fd39c; }
+  .pill.failed, .pill.cancelled { background: #3d2023; color: #f08b8b; }
+  .sev { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sev.critical { color: var(--critical); }
+  .sev.high { color: var(--high); }
+  .sev.medium { color: var(--medium); }
+  .sev.low { color: var(--low); }
+  .sev.info { color: var(--info); }
+  pre {
+    background: #0b0e12; border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; overflow: auto; font-family: var(--mono);
+    font-size: 12px; line-height: 1.5; margin: 0; max-height: 340px; white-space: pre-wrap;
+    word-break: break-word;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--muted); padding: 7px 8px; border-bottom: 1px solid var(--line); font-weight: 600;
+  }
+  td { padding: 8px; border-bottom: 1px solid #21262e; vertical-align: top; }
+  tr.clickable:hover { background: var(--panel-2); cursor: pointer; }
+  .finding { border-left: 3px solid var(--line); padding: 10px 0 10px 14px; margin-bottom: 12px; }
+  .finding.sev-critical { border-color: var(--critical); }
+  .finding.sev-high { border-color: var(--high); }
+  .finding.sev-medium { border-color: var(--medium); }
+  .finding.sev-low { border-color: var(--low); }
+  .finding.sev-info { border-color: var(--info); }
+  .finding .title { font-weight: 600; margin-bottom: 3px; }
+  .finding .meta { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+  .finding p { margin: 6px 0; font-size: 13px; }
+  .badge {
+    display: inline-block; padding: 1px 7px; border-radius: 4px;
+    border: 1px solid var(--line); font-size: 11px; font-family: var(--mono); color: var(--muted);
+  }
+  .summary-line { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+  .summary-line div { font-size: 12px; color: var(--muted); }
+  .summary-line b { display: block; font-size: 19px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 14px; flex-wrap: wrap; }
+  .tab {
+    padding: 7px 13px; border: none; background: none; color: var(--muted);
+    border-bottom: 2px solid transparent; border-radius: 0; font-size: 13px;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; max-width: 420px;
+    padding: 12px 16px; border-radius: var(--radius); font-size: 13px;
+    border: 1px solid var(--line); background: var(--panel-2); z-index: 50;
+    box-shadow: 0 8px 28px rgba(0,0,0,.45);
+  }
+  .toast.error { border-color: #6b2f34; background: #2a1a1c; color: #f0a9a9; }
+  .toast.ok { border-color: #2b5c43; background: #16261e; color: #9bd9b8; }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+  .dot.on { background: var(--ok); }
+  .dot.off { background: var(--critical); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ai-dast-core</h1>
+  <span class="sub">Web DAST Console</span>
+  <span class="spacer"></span>
+  <span class="sub" id="svc-state"><span class="dot off"></span>chưa kết nối</span>
+  <button id="btn-caps" style="padding:5px 11px;font-size:12px">Xem giới hạn</button>
+</header>
+
+<div class="warn">
+  Công cụ này gửi request thật tới target. Chỉ quét hệ thống bạn sở hữu hoặc có
+  <b>uỷ quyền bằng văn bản</b>. Trường <i>Người uỷ quyền</i> là bắt buộc và được ghi vào báo cáo
+  làm dấu vết kiểm toán.
+</div>
+
+<main>
+  <div class="grid">
+
+    <!-- ============ LEFT: form + history ============ -->
+    <div>
+      <div class="card">
+        <h2>Kết nối</h2>
+        <label for="apikey">API key</label>
+        <input type="password" id="apikey" placeholder="để trống nếu chạy localhost" autocomplete="off">
+        <div class="hint">
+          Chỉ lưu trong bộ nhớ của tab này, không ghi ra đâu cả. Bắt buộc khi service bind ra
+          ngoài loopback.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Tạo scan mới</h2>
+
+        <label for="target">Target URL <span style="color:var(--high)">*</span></label>
+        <input type="text" id="target" placeholder="https://staging.example.com" autocomplete="off">
+        <div class="hint" id="host-hint">Phải nằm trong danh sách host operator đã uỷ quyền.</div>
+
+        <label for="authby">Người uỷ quyền <span style="color:var(--high)">*</span></label>
+        <input type="text" id="authby" placeholder="ban@congty.com" autocomplete="off">
+
+        <label for="authnote">Ghi chú uỷ quyền</label>
+        <input type="text" id="authnote" placeholder="ticket #1234, phạm vi đã thoả thuận" autocomplete="off">
+
+        <label for="scopehosts">Host bổ sung (cách nhau dấu phẩy)</label>
+        <input type="text" id="scopehosts" placeholder="api.example.com, *.cdn.example.com" autocomplete="off">
+        <div class="hint">Mỗi host phải đã được operator cho phép. Không thể tự thêm host lạ.</div>
+
+        <label for="planner">Chế độ Planner (AI / Tự động)</label>
+        <select id="planner">
+          <option value="scripted">1. Scripted Recon (Mặc định — Tự động thông minh, Không cần AI/API, Miễn phí)</option>
+          <option value="llm">2. AI Agent (AI tự phân tích và chọn tool quét)</option>
+        </select>
+
+        <div id="ai-config-panel" style="display:none; margin-top:10px; background:var(--panel-2); padding:10px 12px; border-radius:6px; border:1px solid var(--border)">
+          <div style="font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text)">Cấu hình AI Agent (Đã tối ưu siêu tốc):</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:12px">
+            <label for="ai-preset" style="margin:0">Chọn nguồn AI:</label>
+            <select id="ai-preset" style="margin:0; font-size:12px">
+              <option value="groq">Groq (Miễn phí 100%, Qwen3.8 / GPT-OSS 20B — Phản hồi 0.5s/bước)</option>
+              <option value="ollama">Ollama (Chạy Offline trên máy — Không cần API Key, Miễn phí)</option>
+              <option value="openai">OpenAI (GPT-4o mini / GPT-4o)</option>
+              <option value="gemini">Google Gemini (Gemini 1.5 Flash)</option>
+              <option value="openrouter">OpenRouter (DeepSeek / Claude / Llama...)</option>
+              <option value="custom">Tùy chỉnh khác</option>
+            </select>
+
+            <div id="ai-key-wrap">
+              <label for="ai-key" style="margin:4px 0 0">API Key:</label>
+              <input type="password" id="ai-key" placeholder="gsk_... (hoặc để trống nếu đã lưu trong .env)" autocomplete="off" style="margin:0; font-size:12px">
+            </div>
+
+            <label for="ai-model" style="margin:4px 0 0">Tên Model:</label>
+            <input type="text" id="ai-model" value="qwen/qwen3.8-27b" placeholder="qwen/qwen3.8-27b hoặc openai/gpt-oss-20b" style="margin:0; font-size:12px">
+
+            <label for="ai-baseurl" style="margin:4px 0 0">Base URL:</label>
+            <input type="text" id="ai-baseurl" value="https://api.groq.com/openai/v1" placeholder="https://api.groq.com/openai/v1" style="margin:0; font-size:12px">
+          </div>
+        </div>
+
+        <div style="margin-top:12px; background:var(--panel-2); padding:10px 12px; border-radius:6px; border:1px solid var(--border)">
+          <div style="font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text)">Tuỳ chọn quyền quét nâng cao:</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0">
+              <input type="checkbox" id="chk-active" style="width:auto; margin:0">
+              <span>Bật <b>Active Scan</b> (Header & CORS injection checks, OpenAPI probes)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0">
+              <input type="checkbox" id="chk-injection" style="width:auto; margin:0">
+              <span>Bật <b>Injection Probes</b> (Non-mutating reflected XSS, Path Traversal probes)</span>
+            </label>
+          </div>
+          <div class="hint" style="margin-top:6px; margin-bottom:0">Chỉ hoạt động khi service được khởi chạy với cờ cho phép tương ứng.</div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label for="maxpages">Max pages</label>
+            <input type="number" id="maxpages" value="3" min="1" max="200">
+          </div>
+          <div>
+            <label for="maxsteps">Max steps</label>
+            <input type="number" id="maxsteps" value="20" min="1" max="500">
+          </div>
+        </div>
+        <div class="hint">Giá trị vượt trần của operator sẽ bị tự động hạ xuống mức trần, không bị từ chối.</div>
+
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; gap:8px">
+            <button class="primary" id="btn-scan" style="flex:1">Bắt đầu scan</button>
+            <button id="btn-refresh" title="Tải lại danh sách">↻</button>
+          </div>
+          <button id="btn-demo" style="background:#238636; color:#fff; border:none; padding:7px 12px; border-radius:6px; font-size:12.5px; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px" title="Bật Demo Vulnerable Server nội bộ và quét thử nghiệm">
+            🚀 1-Click Bật Target Demo & Quét ngay
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Lịch sử scan</h2>
+        <div id="history"><div class="empty">Chưa có scan nào.</div></div>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: detail ============ -->
+    <div>
+      <div class="card" id="job-card">
+        <h2>Scan hiện tại</h2>
+        <div id="job-empty" class="empty">Chưa chọn scan nào. Tạo một scan mới hoặc chọn từ lịch sử.</div>
+        <div id="job-body" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+            <span id="job-id" class="badge"></span>
+            <span id="job-pill" class="pill queued">queued</span>
+            <span id="job-planner" class="badge"></span>
+            <span class="spacer" style="flex:1"></span>
+            <button id="btn-cancel" class="danger" style="padding:5px 11px;font-size:12px">Huỷ</button>
+          </div>
+
+          <div class="summary-line">
+            <div><b id="c-critical" class="sev critical">0</b>critical</div>
+            <div><b id="c-high" class="sev high">0</b>high</div>
+            <div><b id="c-medium" class="sev medium">0</b>medium</div>
+            <div><b id="c-low" class="sev low">0</b>low</div>
+            <div><b id="c-info" class="sev info">0</b>info</div>
+            <div><b id="c-tools">0</b>tool calls</div>
+            <div><b id="c-duration">0s</b>thời gian</div>
+          </div>
+
+          <div id="progress-wrap" style="margin-bottom:12px">
+            <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px" id="progress-label">tiến độ</div>
+            <div style="height:5px;background:var(--panel-2);border-radius:99px;overflow:hidden">
+              <div id="progress-bar" style="height:100%;width:0%;background:var(--accent);transition:width .3s"></div>
+            </div>
+          </div>
+
+          <div id="job-error" class="hint" style="color:var(--high);display:none"></div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="findings">Findings</button>
+            <button class="tab" data-tab="tree">Bản đồ tấn công (Asset Graph)</button>
+            <button class="tab" data-tab="log">Nhật ký trực tiếp</button>
+            <button class="tab" data-tab="trace">Tool trace</button>
+            <button class="tab" data-tab="surface">Attack surface</button>
+            <button class="tab" data-tab="scope">Scope &amp; cấu hình</button>
+          </div>
+
+          <div id="tab-findings"><div class="empty">Chưa có finding. Kết quả hiện khi scan xong.</div></div>
+          <div id="tab-tree" style="display:none"><div class="empty">Chưa có dữ liệu đồ thị.</div></div>
+          <div id="tab-log" style="display:none"><pre id="log-pre">—</pre></div>
+          <div id="tab-trace" style="display:none"><div class="empty">Chưa có dữ liệu.</div></div>
+          <div id="tab-surface" style="display:none"><div class="empty">Chưa có dữ liệu.</div></div>
+          <div id="tab-scope" style="display:none"><div class="empty">Chưa có dữ liệu.</div></div>
+
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button id="btn-json" disabled>Tải report.json</button>
+            <button id="btn-md" disabled>Tải report.md</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * State. The API key lives only in this closure and never leaves the
+ * tab except as an Authorization header.
+ * ------------------------------------------------------------------ */
+const S = {
+  apiKey: "",
+  caps: null,
+  currentJob: null,
+  pollTimer: null,
+  report: null,
+  tab: "findings",
+};
+
+const $ = (id) => document.getElementById(id);
+
+/* ------------------------------------------------------------------ *
+ * Small helpers
+ * ------------------------------------------------------------------ */
+function toast(message, kind = "") {
+  const node = document.createElement("div");
+  node.className = "toast " + kind;
+  node.textContent = message;
+  document.body.appendChild(node);
+  setTimeout(() => node.remove(), kind === "error" ? 9000 : 5000);
+}
+
+function headers() {
+  const h = { "Content-Type": "application/json" };
+  if (S.apiKey) h["Authorization"] = "Bearer " + S.apiKey;
+  return h;
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
+  const text = await response.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch (_) { body = { raw: text }; }
+  if (!response.ok) {
+    const detail = body && (body.detail || body.error) ? (body.detail || body.error) : `HTTP ${response.status}`;
+    const error = new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    error.status = response.status;
+    error.body = body;
+    throw error;
+  }
+  return body;
+}
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function shortTime(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString();
+}
+
+/* ------------------------------------------------------------------ *
+ * Connection + capabilities
+ * ------------------------------------------------------------------ */
+async function connect() {
+  try {
+    const health = await api("/v1/health");
+    $("svc-state").innerHTML = `<span class="dot on"></span>${escapeHtml(health.version)} · ${escapeHtml(health.deploy_profile)}`;
+    await loadCapabilities();
+    await loadHistory();
+  } catch (error) {
+    $("svc-state").innerHTML = '<span class="dot off"></span>mất kết nối backend';
+  }
+}
+
+// Auto-check connection every 5 seconds if disconnected
+setInterval(async () => {
+  try {
+    const health = await api("/v1/health");
+    $("svc-state").innerHTML = `<span class="dot on"></span>${escapeHtml(health.version)} · ${escapeHtml(health.deploy_profile)}`;
+    if (!S.caps) await loadCapabilities();
+  } catch (_) {
+    $("svc-state").innerHTML = '<span class="dot off"></span>mất kết nối backend';
+  }
+}, 5000);
+
+async function loadCapabilities() {
+  S.caps = await api("/v1/capabilities");
+  // LLM option is always available since user can configure local Ollama or custom API key
+  const rawHosts = S.caps.allowed_hosts || [];
+  const hosts = rawHosts.includes("*") ? "Tất cả host (*)" : (rawHosts.join(", ") || "(chưa cấu hình)");
+  const priv = S.caps.private_addresses_allowed ? "có" : "không";
+  $("host-hint").innerHTML =
+    `Host được phép: <code>${escapeHtml(hosts)}</code> · port: ${escapeHtml((S.caps.allowed_ports || []).join(", "))}` +
+    ` · target private: <b>${priv}</b>`;
+}
+
+function showCapabilities() {
+  if (!S.caps) return;
+  const lines = [
+    "GIỚI HẠN CỦA SERVICE NÀY",
+    "=".repeat(58),
+    "",
+    `Profile            : ${S.caps.deploy_profile}`,
+    `Yêu cầu API key    : ${S.caps.auth_required ? "có" : "không (loopback)"}`,
+    `Host được phép     : ${(S.caps.allowed_hosts || []).join(", ")}`,
+    S.caps.denied_hosts && S.caps.denied_hosts.length
+      ? `Host bị từ chối    : ${S.caps.denied_hosts.join(", ")}` : null,
+    `Port được phép     : ${(S.caps.allowed_ports || []).join(", ")}`,
+    `Target private     : ${S.caps.private_addresses_allowed ? "ĐƯỢC PHÉP" : "bị từ chối"}`,
+    `Active scanning    : ${S.caps.active_scanning_loaded ? "có" : "KHÔNG (read-only)"}`,
+    `Planner            : ${(S.caps.planners || []).join(", ")}`,
+    `AI planner sẵn sàng: ${S.caps.llm_configured ? "có" : "không"}`,
+    `Scan đồng thời     : ${S.caps.max_concurrent_scans}`,
+    "",
+    "TRẦN NGÂN SÁCH MỖI SCAN",
+    "-".repeat(58),
+    ...Object.entries(S.caps.limits || {}).map(([k, v]) => `  ${k.padEnd(26)} ${v}`),
+    "",
+    "GIỚI HẠN CỐ HỮU",
+    "-".repeat(58),
+    ...(S.caps.limitations || []).map((l, i) => `  ${i + 1}. ${l}`),
+    "",
+    "Một request chỉ có thể THU HẸP uỷ quyền này, không bao giờ mở rộng được.",
+  ].filter(Boolean);
+  alert(lines.join("\n"));
+}
+
+/* ------------------------------------------------------------------ *
+ * Submit a scan
+ * ------------------------------------------------------------------ */
+async function submitScan() {
+  const target = $("target").value.trim();
+  const authorizedBy = $("authby").value.trim();
+  if (!target) { toast("Cần nhập target URL.", "error"); return; }
+  if (!authorizedBy) { toast("Cần nhập người uỷ quyền — đây là dấu vết kiểm toán.", "error"); return; }
+
+  const scopeHosts = $("scopehosts").value
+    .split(",").map((s) => s.trim()).filter(Boolean);
+
+  const payload = {
+    target,
+    authorized_by: authorizedBy,
+    authorization_note: $("authnote").value.trim(),
+    scope_hosts: scopeHosts,
+    planner: $("planner").value,
+    ai_api_key: $("planner").value === "llm" ? ($("ai-key") ? $("ai-key").value.trim() : "") || undefined : undefined,
+    ai_model: $("planner").value === "llm" ? ($("ai-model") ? $("ai-model").value.trim() : "") || undefined : undefined,
+    ai_base_url: $("planner").value === "llm" ? ($("ai-baseurl") ? $("ai-baseurl").value.trim() : "") || undefined : undefined,
+    enable_active: $("chk-active") ? $("chk-active").checked : false,
+    enable_injection: $("chk-injection") ? $("chk-injection").checked : false,
+    max_pages: parseInt($("maxpages").value, 10) || undefined,
+    max_steps: parseInt($("maxsteps").value, 10) || undefined,
+  };
+
+  $("btn-scan").disabled = true;
+  try {
+    const accepted = await api("/v1/scans", { method: "POST", body: JSON.stringify(payload) });
+    toast(`Đã xếp hàng: ${accepted.job_id}`, "ok");
+    await loadHistory();
+    openJob(accepted.job_id);
+  } catch (error) {
+    toast("Không nhận được scan: " + error.message, "error");
+  } finally {
+    $("btn-scan").disabled = false;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * History
+ * ------------------------------------------------------------------ */
+async function loadHistory() {
+  let data;
+  try { data = await api("/v1/scans?limit=50"); }
+  catch (error) { $("history").innerHTML = `<div class="empty">Không tải được: ${escapeHtml(error.message)}</div>`; return; }
+
+  if (!data.jobs.length) {
+    $("history").innerHTML = '<div class="empty">Chưa có scan nào.</div>';
+    return;
+  }
+  const rows = data.jobs.map((job) => {
+    const counts = job.severity_counts || {};
+    const sev = ["critical", "high", "medium", "low"]
+      .map((name) => counts[name] ? `<span class="sev ${name}">${counts[name]}${name[0].toUpperCase()}</span>` : "")
+      .join(" ");
+    return `<tr class="clickable" data-job="${escapeHtml(job.job_id)}">
+      <td><span class="pill ${escapeHtml(job.state)}">${escapeHtml(job.state)}</span></td>
+      <td>
+        <div style="font-family:var(--mono);font-size:12px;word-break:break-all">${escapeHtml(job.target)}</div>
+        <div class="hint">${escapeHtml(shortTime(job.submitted_at))} · ${escapeHtml(job.authorized_by)}</div>
+      </td>
+      <td style="white-space:nowrap">${sev || `<span class="hint">${job.finding_count} finding</span>`}</td>
+    </tr>`;
+  }).join("");
+  $("history").innerHTML = `<table>${rows}</table>`;
+  $("history").querySelectorAll("tr[data-job]").forEach((row) => {
+    row.addEventListener("click", () => openJob(row.dataset.job));
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Job detail + polling
+ * ------------------------------------------------------------------ */
+function openJob(jobId) {
+  S.currentJob = jobId;
+  S.report = null;
+  $("job-empty").style.display = "none";
+  $("job-body").style.display = "";
+  $("job-id").textContent = jobId;
+  $("btn-json").disabled = true;
+  $("btn-md").disabled = true;
+  $("job-error").style.display = "none";
+  $("tab-findings").innerHTML = '<div class="empty">Đang chờ kết quả…</div>';
+  $("tab-trace").innerHTML = '<div class="empty">Chưa có dữ liệu.</div>';
+  $("tab-surface").innerHTML = '<div class="empty">Chưa có dữ liệu.</div>';
+  $("tab-scope").innerHTML = '<div class="empty">Chưa có dữ liệu.</div>';
+  $("log-pre").textContent = "—";
+  pollJob();
+}
+
+async function pollJob() {
+  if (S.pollTimer) { clearTimeout(S.pollTimer); S.pollTimer = null; }
+  if (!S.currentJob) return;
+
+  let job;
+  try { job = await api(`/v1/scans/${S.currentJob}`); }
+  catch (error) {
+    if (error.status === 404) { toast("Không tìm thấy scan này.", "error"); return; }
+    S.pollTimer = setTimeout(pollJob, 3000);
+    return;
+  }
+
+  renderJob(job);
+
+  if (job.state === "completed" || job.state === "failed" || job.state === "cancelled") {
+    await loadReport(job);
+    await loadHistory();
+    return;
+  }
+  S.pollTimer = setTimeout(pollJob, 1500);
+}
+
+function renderJob(job) {
+  const pill = $("job-pill");
+  pill.className = "pill " + job.state;
+  pill.textContent = job.state;
+  $("job-planner").textContent = job.planner;
+
+  const counts = job.severity_counts || {};
+  ["critical", "high", "medium", "low", "info"].forEach((name) => {
+    $("c-" + name).textContent = counts[name] || 0;
+  });
+  $("c-tools").textContent = job.tool_call_count || 0;
+  $("c-duration").textContent = (job.duration_s || 0).toFixed(1) + "s";
+
+  const progress = job.progress || {};
+  const used = progress.tool_calls_used || 0;
+  const limit = progress.tool_calls_limit || 0;
+  const pct = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  $("progress-bar").style.width = pct + "%";
+  $("progress-label").textContent = limit
+    ? `tool calls ${used}/${limit} · steps ${progress.steps_used || 0}/${progress.steps_limit || 0} · pages ${progress.pages_used || 0}/${progress.pages_limit || 0} · requests ${progress.requests_used || 0}/${progress.requests_limit || 0}`
+    : "đang khởi động…";
+
+  const errorNode = $("job-error");
+  if (job.error) {
+    errorNode.style.display = "";
+    errorNode.style.color = "var(--critical)";
+    errorNode.textContent = "Lỗi: " + job.error;
+  } else if (job.stop_reason) {
+    errorNode.style.display = "";
+    let reasonText = job.stop_reason;
+    if (reasonText.includes("planning step budget exhausted")) {
+      reasonText = `Đã hoàn thành đủ ${progress.steps_used || 0}/${progress.steps_limit || 0} bước quét theo kế hoạch.`;
+    } else if (reasonText.includes("the recon playbook completed")) {
+      reasonText = "Hoàn tất kịch bản trinh sát tự động.";
+    } else if (reasonText.includes("scan exceeded its")) {
+      reasonText = "Đã đạt giới hạn thời gian quét tối đa.";
+    }
+    const isSuccess = job.state === "completed";
+    errorNode.style.color = isSuccess ? "var(--ok)" : "var(--medium)";
+    errorNode.textContent = (isSuccess ? "✓ " : "") + reasonText;
+  } else {
+    errorNode.style.display = "none";
+  }
+
+  if (job.recent_events && job.recent_events.length) {
+    $("log-pre").textContent = job.recent_events.join("\n");
+    $("log-pre").scrollTop = $("log-pre").scrollHeight;
+  }
+
+  $("btn-cancel").disabled = ["completed", "failed", "cancelled"].includes(job.state);
+
+  if (job.scope) {
+    $("tab-scope").innerHTML = "<pre>" + escapeHtml(JSON.stringify(job.scope, null, 2)) + "</pre>";
+  }
+}
+
+async function loadReport(job) {
+  try {
+    const envelope = await api(`/v1/scans/${job.job_id}/report`);
+    S.report = envelope.report;
+    $("btn-json").disabled = false;
+    $("btn-md").disabled = false;
+    renderFindings(S.report.findings || []);
+    renderTree(S.report.attack_surface || {});
+    renderTrace(S.report.tool_trace || []);
+    renderSurface(S.report.attack_surface || {});
+    if (job.scope) {
+      $("tab-scope").innerHTML = "<pre>" + escapeHtml(JSON.stringify({
+        scope: S.report.scope,
+        config: S.report.config,
+        authorization: S.report.authorization,
+        counters: S.report.counters,
+        limitations: S.report.limitations,
+      }, null, 2)) + "</pre>";
+    }
+  } catch (error) {
+    if (error.status !== 409) {
+      $("tab-findings").innerHTML = `<div class="empty">Không tải được report: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Rendering
+ * ------------------------------------------------------------------ */
+function renderFindings(findings) {
+  if (!findings.length) {
+    $("tab-findings").innerHTML =
+      '<div class="empty">Không có finding nào từ các check đã chạy. ' +
+      'Đây không phải là kết luận "an toàn" — xem mục Limitations trong report.</div>';
+    return;
+  }
+  $("tab-findings").innerHTML = findings.map((f) => {
+    const evidence = (f.evidence || []).map((e) =>
+      `<tr><td>${escapeHtml(e.tool)}</td><td>#${e.tool_call_index}</td>` +
+      `<td>${escapeHtml(e.location || "—")}</td>` +
+      `<td style="font-family:var(--mono);font-size:11.5px;word-break:break-all">${escapeHtml(e.observed || "—")}</td></tr>`
+    ).join("");
+    const merged = f.merged_from > 1
+      ? `<span class="badge">quan sát ${f.merged_from}×</span>` : "";
+    return `<div class="finding sev-${escapeHtml(f.severity)}">
+      <div class="title"><span class="sev ${escapeHtml(f.severity)}">[${escapeHtml(f.severity.toUpperCase())}]</span> ${escapeHtml(f.title)}</div>
+      <div class="meta">${escapeHtml(f.host || "")} · ${escapeHtml(f.location || "")} · ${escapeHtml(f.category)} · confidence: ${escapeHtml(f.confidence)} ${merged}</div>
+      ${f.description ? `<p>${escapeHtml(f.description)}</p>` : ""}
+      ${f.impact ? `<p><b>Ảnh hưởng.</b> ${escapeHtml(f.impact)}</p>` : ""}
+      ${f.recommendation ? `<p><b>Khắc phục.</b> ${escapeHtml(f.recommendation)}</p>` : ""}
+      ${evidence ? `<table><thead><tr><th>Tool</th><th>Call</th><th>Vị trí</th><th>Quan sát</th></tr></thead><tbody>${evidence}</tbody></table>` : ""}
+      ${f.owasp || f.cwe ? `<div class="meta" style="margin-top:6px">${escapeHtml(f.owasp || "")} ${escapeHtml(f.cwe || "")}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function renderTrace(trace) {
+  if (!trace.length) { $("tab-trace").innerHTML = '<div class="empty">Không có tool call nào.</div>'; return; }
+  const rows = trace.map((t) =>
+    `<tr>
+      <td>#${t.index}</td>
+      <td style="font-family:var(--mono)">${escapeHtml(t.tool)}</td>
+      <td><span class="badge">${escapeHtml(t.status)}</span></td>
+      <td>${t.duration_ms} ms</td>
+      <td>${t.findings_count}</td>
+      <td style="font-size:12px">${escapeHtml(t.reason || "")}</td>
+    </tr>`).join("");
+  $("tab-trace").innerHTML =
+    `<table><thead><tr><th>#</th><th>Tool</th><th>Trạng thái</th><th>Thời gian</th><th>Findings</th><th>Lý do AI</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderSurface(surface) {
+  const endpoints = (surface.api_endpoints || []).length
+    ? "<ul style='margin:6px 0 0 18px;font-family:var(--mono);font-size:12px'>" +
+      surface.api_endpoints.slice(0, 30).map((u) => `<li>${escapeHtml(u)}</li>`).join("") + "</ul>"
+    : '<div class="hint">không phát hiện endpoint nào</div>';
+
+  const forms = (surface.forms || []).length
+    ? "<table><thead><tr><th>Action</th><th>Method</th><th>Login</th><th>Upload</th><th>CSRF token</th></tr></thead><tbody>" +
+      surface.forms.map((f) =>
+        `<tr><td style="font-family:var(--mono);font-size:11.5px;word-break:break-all">${escapeHtml(f.action)}</td>` +
+        `<td>${escapeHtml(f.method)}</td><td>${f.is_login_form ? "✓" : "—"}</td>` +
+        `<td>${f.is_upload_form ? "✓" : "—"}</td>` +
+        `<td>${f.has_csrf_token ? "✓" : "<span class='sev medium'>thiếu</span>"}</td></tr>`).join("") +
+      "</tbody></table>"
+    : '<div class="hint">không có form nào</div>';
+
+  const links = (surface.sample_links || []).filter((l) => l.in_scope).slice(0, 40)
+    .map((l) => `<li>${escapeHtml(l.url)}${l.query_keys && l.query_keys.length ? ` <span class="badge">?${escapeHtml(l.query_keys.join(","))}</span>` : ""}</li>`)
+    .join("");
+
+  $("tab-surface").innerHTML = `
+    <div class="summary-line">
+      <div><b>${surface.pages_opened || 0}</b>pages</div>
+      <div><b>${surface.links_total || 0}</b>URL</div>
+      <div><b>${surface.links_in_scope || 0}</b>trong scope</div>
+      <div><b>${surface.links_with_query || 0}</b>có tham số</div>
+      <div><b>${surface.forms_total || 0}</b>forms</div>
+      <div><b>${surface.scripts_total || 0}</b>scripts</div>
+      <div><b>${surface.api_endpoints_total || 0}</b>API route</div>
+    </div>
+    <h2 style="margin-top:14px">Form</h2>${forms}
+    <h2 style="margin-top:14px">API endpoint (ứng viên)</h2>${endpoints}
+    <h2 style="margin-top:14px">URL trong scope</h2>
+    <ul style="margin:6px 0 0 18px;font-family:var(--mono);font-size:12px">${links || "<li class='hint'>không có</li>"}</ul>`;
+}
+
+function renderTree(surface) {
+  const tree = surface.asset_tree;
+  if (!tree) {
+    $("tab-tree").innerHTML = '<div class="empty">Chưa có dữ liệu đồ thị tài sản (Asset Graph). Chạy scan để xây dựng bản đồ.</div>';
+    return;
+  }
+
+  const facts = surface.facts || tree.facts || [];
+  const hints = surface.hints || tree.hints || [];
+
+  let factsHtml = "";
+  if (facts.length || hints.length) {
+    factsHtml = `
+      <div style="background:var(--bg-card);border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-weight:700;color:var(--accent);margin-bottom:6px">🧠 Trí tuệ quan sát & Đúc kết từ AI (Facts & Hints)</div>
+        ${facts.length ? `<div style="font-size:12.5px;margin-bottom:6px"><b>Sự thật phát hiện:</b><ul style="margin:4px 0 6px 18px">` + facts.map(f => `<li>${escapeHtml(f)}</li>`).join("") + `</ul></div>` : ""}
+        ${hints.length ? `<div style="font-size:12.5px"><b>Gợi ý tấn công tiếp theo:</b><ul style="margin:4px 0 0 18px">` + hints.map(h => `<li style="color:var(--high)">${escapeHtml(h)}</li>`).join("") + `</ul></div>` : ""}
+      </div>
+    `;
+  }
+
+  function renderNode(node, level = 0) {
+    const isFolder = node.type === "folder";
+    const statusBadge = node.status === "vulnerable"
+      ? '<span class="badge" style="background:rgba(239,68,68,0.2);color:var(--high);border-color:var(--high)">🔴 VULNERABLE</span>'
+      : (node.status === "tested"
+        ? '<span class="badge" style="background:rgba(59,130,246,0.2);color:#3b82f6;border-color:#3b82f6">🔵 TESTED</span>'
+        : '<span class="badge" style="background:rgba(156,163,175,0.2);color:#9ca3af;border-color:#9ca3af">⚪ CHỜ QUÉT</span>');
+
+    const testedText = node.tested && node.tested.length
+      ? `<span class="hint" style="font-size:11px;margin-left:6px">[checks: ${escapeHtml(node.tested.join(", "))}]</span>`
+      : "";
+
+    let findingsList = "";
+    if (node.findings && node.findings.length) {
+      findingsList = `<ul style="margin:4px 0 6px 22px;font-size:12px">` +
+        node.findings.map(f => `<li style="color:var(--high)"><b>[${escapeHtml((f.severity || "MEDIUM").toUpperCase())}]</b> ${escapeHtml(f.title)}</li>`).join("") +
+        `</ul>`;
+    }
+
+    let childrenHtml = "";
+    if (node.children && node.children.length) {
+      childrenHtml = `<div style="margin-left:18px;border-left:1px dashed var(--line);padding-left:10px">` +
+        node.children.map(c => renderNode(c, level + 1)).join("") +
+        `</div>`;
+    }
+
+    if (isFolder) {
+      return `
+        <div style="margin-top:10px;margin-bottom:6px">
+          <div style="font-weight:700;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:6px">
+            📁 <span>${escapeHtml(node.name)}</span>
+          </div>
+          ${childrenHtml}
+        </div>
+      `;
+    }
+
+    const typeIcon = node.type === "api" ? "⚡" : (node.type === "form" ? "📝" : "📄");
+    return `
+      <div style="margin:5px 0;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>${typeIcon}</span>
+          <span style="font-family:var(--mono);font-size:12px;font-weight:600">${escapeHtml(node.name)}</span>
+          ${statusBadge}
+          ${testedText}
+        </div>
+        ${findingsList}
+        ${childrenHtml}
+      </div>
+    `;
+  }
+
+  $("tab-tree").innerHTML = `
+    ${factsHtml}
+    <div style="margin-bottom:10px;font-weight:700;font-size:14px">🎯 Mục tiêu gốc: <span style="font-family:var(--mono);color:var(--accent)">${escapeHtml(tree.url || tree.name)}</span></div>
+    <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:8px;padding:14px">
+      ${(tree.children || []).map(c => renderNode(c)).join("") || '<div class="hint">Chưa có tài sản nào được phân cấp.</div>'}
+    </div>
+  `;
+}
+
+/* ------------------------------------------------------------------ *
+ * Downloads
+ * ------------------------------------------------------------------ */
+function download(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+async function downloadReport(kind) {
+  if (!S.currentJob) return;
+  if (kind === "json" && S.report) {
+    download(`${S.currentJob}-report.json`, JSON.stringify(S.report, null, 2), "application/json");
+    return;
+  }
+  try {
+    const response = await fetch(`/v1/scans/${S.currentJob}/report${kind === "md" ? ".md" : ""}`, { headers: headers() });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (kind === "json") {
+      download(`${S.currentJob}-report.json`, await response.text(), "application/json");
+    } else {
+      download(`${S.currentJob}-report.md`, await response.text(), "text/markdown");
+    }
+  } catch (error) {
+    toast("Không tải được report: " + error.message, "error");
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Tabs
+ * ------------------------------------------------------------------ */
+function selectTab(name) {
+  S.tab = name;
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === name);
+  });
+  ["findings", "tree", "log", "trace", "surface", "scope"].forEach((key) => {
+    $("tab-" + key).style.display = key === name ? "" : "none";
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Wiring
+ * ------------------------------------------------------------------ */
+$("btn-scan").addEventListener("click", submitScan);
+$("btn-refresh").addEventListener("click", loadHistory);
+$("btn-caps").addEventListener("click", showCapabilities);
+$("btn-json").addEventListener("click", () => downloadReport("json"));
+$("btn-md").addEventListener("click", () => downloadReport("md"));
+
+$("btn-demo").addEventListener("click", async () => {
+  const btn = $("btn-demo");
+  btn.disabled = true;
+  btn.textContent = "⏳ Đang khởi tạo Target Demo…";
+  try {
+    const res = await api("/v1/demo/start", { method: "POST" });
+    toast(res.message || res.note || "Đã khởi động Demo Target!", "ok");
+    $("target").value = res.target || res.target_url || "http://127.0.0.1:8099";
+    $("authby").value = "demo-operator";
+    $("authnote").value = "1-click local test target";
+    if ($("chk-active")) $("chk-active").checked = true;
+    if ($("chk-injection")) $("chk-injection").checked = true;
+    toast("Đang tự động chạy scan trên target demo…", "ok");
+    await submitScan();
+  } catch (error) {
+    const isNetworkError = error.message && error.message.includes("Failed to fetch");
+    if (isNetworkError) {
+      toast("Backend service chưa chạy hoặc đã bị tắt. Vui lòng mở lại file ai-dast-web.exe hoặc start-web.bat!", "error");
+    } else {
+      toast("Không khởi động được demo target: " + error.message, "error");
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🚀 1-Click Bật Target Demo & Quét ngay";
+  }
+});
+
+$("btn-cancel").addEventListener("click", async () => {
+  if (!S.currentJob) return;
+  try {
+    const result = await api(`/v1/scans/${S.currentJob}/cancel`, { method: "POST" });
+    toast(result.note || "Đã yêu cầu huỷ.", "ok");
+    pollJob();
+  } catch (error) {
+    toast("Không huỷ được: " + error.message, "error");
+  }
+});
+
+$("apikey").addEventListener("change", () => {
+  S.apiKey = $("apikey").value.trim();
+  connect();
+});
+
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => selectTab(tab.dataset.tab));
+});
+
+$("target").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") submitScan();
+});
+
+// Toggle AI Config panel
+$("planner").addEventListener("change", () => {
+  const isLlm = $("planner").value === "llm";
+  $("ai-config-panel").style.display = isLlm ? "block" : "none";
+  if (isLlm && ($("maxsteps").value === "20" || $("maxsteps").value === "")) {
+    $("maxsteps").value = "8";
+  }
+});
+
+// Presets for AI Providers
+$("ai-preset").addEventListener("change", () => {
+  const val = $("ai-preset").value;
+  const keyWrap = $("ai-key-wrap");
+  if (val === "groq") {
+    keyWrap.style.display = "block";
+    $("ai-key").placeholder = "gsk_... (hoặc để trống nếu đã lưu trong .env)";
+    $("ai-model").value = "qwen/qwen3.8-27b";
+    $("ai-baseurl").value = "https://api.groq.com/openai/v1";
+  } else if (val === "ollama") {
+    keyWrap.style.display = "none";
+    $("ai-key").value = "";
+    $("ai-model").value = "qwen2.5-coder:7b";
+    $("ai-baseurl").value = "http://localhost:11434/v1";
+  } else if (val === "openai") {
+    keyWrap.style.display = "block";
+    $("ai-key").placeholder = "sk-...";
+    $("ai-model").value = "gpt-4o-mini";
+    $("ai-baseurl").value = "";
+  } else if (val === "gemini") {
+    keyWrap.style.display = "block";
+    $("ai-key").placeholder = "AIzaSy...";
+    $("ai-model").value = "gemini-1.5-flash";
+    $("ai-baseurl").value = "https://generativelanguage.googleapis.com/v1beta/openai/";
+  } else if (val === "openrouter") {
+    keyWrap.style.display = "block";
+    $("ai-key").placeholder = "sk-or-v1-...";
+    $("ai-model").value = "deepseek/deepseek-chat";
+    $("ai-baseurl").value = "https://openrouter.ai/api/v1";
+  } else if (val === "custom") {
+    keyWrap.style.display = "block";
+  }
+});
+// Auto-save and auto-restore AI Key from localStorage
+try {
+  const savedKey = localStorage.getItem("ai_dast_groq_key") || localStorage.getItem("ai_dast_api_key");
+  if (savedKey) $("ai-key").value = savedKey;
+  const savedPreset = localStorage.getItem("ai_dast_preset");
+  if (savedPreset) {
+    $("ai-preset").value = savedPreset;
+    $("ai-preset").dispatchEvent(new Event("change"));
+  }
+} catch (_) {}
+
+$("ai-key").addEventListener("input", () => {
+  try {
+    localStorage.setItem("ai_dast_api_key", $("ai-key").value.trim());
+    if ($("ai-preset").value === "groq") {
+      localStorage.setItem("ai_dast_groq_key", $("ai-key").value.trim());
+    }
+  } catch (_) {}
+});
+
+$("ai-preset").addEventListener("change", () => {
+  try {
+    localStorage.setItem("ai_dast_preset", $("ai-preset").value);
+  } catch (_) {}
+});
+
+connect();
+</script>
+</body>
+</html>

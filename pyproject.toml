@@ -1,0 +1,29 @@
+[project]
+name = "ai-dast-core"
+version = "0.1.0"
+description = "Scope-restricted AI-assisted web DAST scanner where the AI selects tools and the harness enforces policy"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+markers = [
+    "integration: tests that launch the browser and make real local HTTP requests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "E501",   # long lines are handled by the formatter
+    "RUF001", # the report deliberately uses typographic characters
+    "RUF002",
+    "RUF003",
+]

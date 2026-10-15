@@ -1,0 +1,28 @@
+# Runtime dependencies for ai-dast-core.
+#
+# Deliberately small. Every dependency here is one the harness itself needs to
+# enforce its security properties; nothing is pulled in for convenience.
+#
+#   pydantic   - the typed contract at every boundary (tool args, findings, report).
+#                This is a security control, not just validation: `extra="forbid"`
+#                is what stops the AI inventing parameters.
+#   httpx      - controlled HTTP for the passive checks. Used with
+#                follow_redirects=False so the scope guard can inspect every hop.
+#   playwright - the controlled browser. The AI never touches it directly.
+#   openai     - only needed for `--planner llm`, against any OpenAI-compatible API.
+#                The default `--planner scripted` needs no LLM client at all.
+#   fastapi    - the HTTP service (`ai-dast-core serve`) and the web UI it serves.
+#   uvicorn    - ASGI server that runs the FastAPI app.
+#
+# Install:
+#   python -m venv .venv
+#   .venv/Scripts/python -m pip install -r requirements.txt      # Windows
+#   .venv/bin/python     -m pip install -r requirements.txt      # macOS / Linux
+#   python -m playwright install chromium
+
+pydantic>=2.9,<3
+httpx>=0.27,<1
+playwright>=1.49,<2
+openai>=1.50
+fastapi>=0.115
+uvicorn[standard]>=0.32
