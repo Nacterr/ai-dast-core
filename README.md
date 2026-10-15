@@ -1,4 +1,4 @@
-# AI DAST Core — ARTEX Autonomous Security Testing Platform
+# AI DAST Core — Autonomous Security Testing Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+" />
@@ -18,15 +18,15 @@
 > 👉 **[https://nacterr.github.io/ai-dast-core/](https://nacterr.github.io/ai-dast-core/)**  
 > *(Chạy 100% online trên GitHub Pages, tương tác đầy đủ: Quét Demo, Phân tích AI, Retest, Quản lý Cụm LLM Pool).*
 
-Bạn có thể chạy thử nghiệm và tương tác với giao diện ARTEX Web Console và Desktop GUI thông qua các chế độ:
+Bạn có thể chạy thử nghiệm và tương tác với giao diện AI DAST Web Console và Desktop GUI thông qua các chế độ:
 
 | Chế độ | Đường dẫn / Lệnh khởi chạy | Mô tả |
 | :--- | :--- | :--- |
 | **🌐 Online Web Demo** | **[https://nacterr.github.io/ai-dast-core/](https://nacterr.github.io/ai-dast-core/)** | **Xem ngay trên web** không cần cài đặt bất kỳ phần mềm nào. Tương tác đầy đủ tính năng! |
-| **🌐 Local Web Console** | `http://127.0.0.1:8788/` | Chạy file `chay-web-artex.bat` hoặc lệnh `python -m app.artex_web`. Giao diện Web Console cục bộ. |
+| **🌐 Local Web Console** | `http://127.0.0.1:8788/` | Chạy file `chay-web.bat` hoặc lệnh `python -m app.artex_web`. Giao diện Web Console cục bộ. |
 | **🌍 Online Public Tunnel** | `https://xxxx.trycloudflare.com` | Chạy file `start-online.bat`. Tự động tạo đường hầm HTTPS Cloudflare công khai toàn cầu. |
 | **🖥️ Native Desktop GUI** | Mở ứng dụng Desktop | Chạy file `chay-app.bat` hoặc lệnh `python -m app.desktop`. Giao diện PySide6 chuyên nghiệp cho Security Analysts. |
-| **🔗 Tham chiếu Thiết kế** | [ARTEX Demo Reference](https://artex-demo.mhtsec.com/system/llm/) | Nguồn cảm hứng chuẩn mực về kiến trúc Quản lý Cụm LLM Pool và DAST của MHTSec. |
+| **🔗 Tham chiếu Thiết kế** | [ARTEX Demo Reference](https://artex-demo.mhtsec.com/system/llm/) | Dự án lấy cảm hứng kiến trúc và tham chiếu thiết kế trực quan từ ARTEX (MHTSec) về Quản lý Cụm LLM Pool & DAST. |
 
 ---
 
@@ -101,10 +101,10 @@ Hoặc mở terminal gõ:
 .\.venv\Scripts\python.exe -m app.desktop
 ```
 
-### Cách 2: Chạy Web Console (ARTEX Style)
+### Cách 2: Chạy Web Console (Browser UI)
 Nhấp đúp chuột vào file:
 ```
-chay-web-artex.bat
+chay-web.bat
 ```
 Hoặc chạy lệnh:
 ```powershell

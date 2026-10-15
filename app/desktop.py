@@ -729,7 +729,7 @@ class AiDastStudioWindow(QMainWindow):
 
         title_col = QVBoxLayout()
         title_col.setSpacing(1)
-        app_name = QLabel("AI DAST PRO · ARTEX")
+        app_name = QLabel("AI DAST PRO · ENTERPRISE")
         app_name.setStyleSheet("color: #F8FAFC; font-size: 14px; font-weight: 800; letter-spacing: 0.5px;")
         app_ver = QLabel("AUTONOMOUS PENTEST SUITE v2.5")
         app_ver.setStyleSheet("color: #38BDF8; font-size: 8.5px; font-weight: 700; letter-spacing: 0.7px;")
@@ -817,7 +817,7 @@ class AiDastStudioWindow(QMainWindow):
 
         btn_row_sb = QHBoxLayout()
         btn_row_sb.setSpacing(6)
-        artex_web_btn = QPushButton("🌐 Web Demo (ARTEX)")
+        artex_web_btn = QPushButton("🌐 Mở Web Console")
         artex_web_btn.setProperty("class", "SecondaryBtn")
         artex_web_btn.setStyleSheet(
             "background-color:#132238; color:#38BDF8; border:1px solid #0284C7; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700;"
@@ -893,13 +893,13 @@ class AiDastStudioWindow(QMainWindow):
         self.stop_btn.clicked.connect(self._cancel_selected_or_running_job)
         row1.addWidget(self.stop_btn)
 
-        self.top_artex_btn = QPushButton("🌐 Mở Web Demo (ARTEX)")
+        self.top_artex_btn = QPushButton("🌐 Mở Web Console")
         self.top_artex_btn.setProperty("class", "SecondaryBtn")
         self.top_artex_btn.setMinimumHeight(36)
         self.top_artex_btn.setStyleSheet(
             "background-color:#132238; color:#38BDF8; border:1px solid #0284C7; border-radius:7px; padding:6px 12px; font-size:12px; font-weight:700;"
         )
-        self.top_artex_btn.setToolTip("Mở giao diện Web Demo kiểu ARTEX (/system/llm, /tasks, Chuỗi suy luận) trên trình duyệt")
+        self.top_artex_btn.setToolTip("Mở giao diện Web Console (/system/llm, /tasks, Chuỗi suy luận) trên trình duyệt")
         self.top_artex_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.top_artex_btn.clicked.connect(self._open_artex_web_demo)
         row1.addWidget(self.top_artex_btn)
@@ -1125,7 +1125,7 @@ class AiDastStudioWindow(QMainWindow):
 
         filter_bar.addStretch()
 
-        # AI Deep Analysis & Remediation Code Button + ARTEX 1-Click Retest
+        # AI Deep Analysis & Remediation Code Button + 1-Click Retest
         self.ai_finding_btn = QPushButton("🤖 AI Phân Tích & Code Vá Lỗi")
         self.ai_finding_btn.setProperty("class", "SecondaryBtn")
         self.ai_finding_btn.setStyleSheet(
@@ -1175,7 +1175,7 @@ class AiDastStudioWindow(QMainWindow):
         self.pages.addWidget(page)
 
     # ----------------------------------------------------------------------- #
-    # Page 2: ARTEX Exploration Chain & Asset Graph
+    # Page 2: Exploration Chain & Asset Graph
     # ----------------------------------------------------------------------- #
 
     def _build_page_assets(self) -> None:
@@ -1220,7 +1220,7 @@ class AiDastStudioWindow(QMainWindow):
         self.pages.addWidget(page)
 
     # ----------------------------------------------------------------------- #
-    # Page 3: HTTP Traffic History with ARTEX Advanced Filter Bar
+    # Page 3: HTTP Traffic History with Advanced Filter Bar
     # ----------------------------------------------------------------------- #
 
     def _build_page_http_history(self) -> None:
@@ -1281,7 +1281,7 @@ class AiDastStudioWindow(QMainWindow):
         self.pages.addWidget(page)
 
     # ----------------------------------------------------------------------- #
-    # Page 4: Executive Markdown Report (ARTEX Report Tab)
+    # Page 4: Executive Markdown Report
     # ----------------------------------------------------------------------- #
 
     def _build_page_report(self) -> None:
@@ -1325,7 +1325,7 @@ class AiDastStudioWindow(QMainWindow):
         self.pages.addWidget(page)
 
     # ----------------------------------------------------------------------- #
-    # Page 5: ARTEX LLM Pool Management (/system/llm/) & Call Telemetry
+    # Page 5: LLM Pool Management (/system/llm/) & Call Telemetry
     # ----------------------------------------------------------------------- #
 
     def _build_page_llm_pool(self) -> None:
@@ -1336,7 +1336,7 @@ class AiDastStudioWindow(QMainWindow):
 
         hdr_row = QHBoxLayout()
         hdr_row.setSpacing(8)
-        title = QLabel("🧠 QUẢN LÝ CỤM MÔ HÌNH AI & NGẮT MẠCH TỰ ĐỘNG (ARTEX /system/llm/)")
+        title = QLabel("🧠 QUẢN LÝ CỤM MÔ HÌNH AI & NGẮT MẠCH TỰ ĐỘNG (/system/llm/)")
         title.setStyleSheet("color: #38BDF8; font-size: 12px; font-weight: 800;")
         hdr_row.addWidget(title)
         hdr_row.addStretch()
@@ -1484,7 +1484,7 @@ class AiDastStudioWindow(QMainWindow):
         f_layout.setContentsMargins(18, 0, 18, 0)
         f_layout.setSpacing(14)
 
-        self.status_lbl = QLabel("🟢 Sẵn sàng. Nhập URL mục tiêu, nhấn '🚀 Chạy Demo', hoặc mở '🌐 Web Demo (ARTEX)'.")
+        self.status_lbl = QLabel("🟢 Sẵn sàng. Nhập URL mục tiêu, nhấn '🚀 Chạy Demo', hoặc mở '🌐 Mở Web Console'.")
         self.status_lbl.setStyleSheet("color: #94A3B8; font-size: 11px; font-weight: 600;")
         f_layout.addWidget(self.status_lbl)
 
@@ -1517,7 +1517,7 @@ class AiDastStudioWindow(QMainWindow):
     def _open_artex_web_demo(self) -> None:
         url = ensure_artex_web_server(8788)
         webbrowser.open(url)
-        self.status_lbl.setText(f"🌐 Đã mở giao diện ARTEX Web Demo Console tại: {url}")
+        self.status_lbl.setText(f"🌐 Đã mở giao diện Web Console tại: {url}")
         self.status_lbl.setStyleSheet("color: #38BDF8; font-size: 11px; font-weight: 700;")
 
     def _open_runs_folder(self) -> None:
@@ -2591,7 +2591,7 @@ class AiDastStudioWindow(QMainWindow):
 
         banner = f"""
         <div style="background-color:{b_bg}; border:1.5px solid {b_col}; border-radius:8px; padding:12px; margin-bottom:14px;">
-            <div style="color:{b_col}; font-weight:800; font-size:13px;">🔬 KẾT QUẢ KIỂM TRA LẠI TRỰC TIẾP (ARTEX 1-CLICK RETEST): {verdict}</div>
+            <div style="color:{b_col}; font-weight:800; font-size:13px;">🔬 KẾT QUẢ KIỂM TRA LẠI TRỰC TIẾP (1-CLICK RETEST): {verdict}</div>
             <div style="color:#E2E8F0; font-size:12px; margin-top:4px;">{detail}</div>
         </div>
         """
@@ -2642,7 +2642,7 @@ class AiDastStudioWindow(QMainWindow):
 
         self.asset_tree.expandAll()
 
-        # Build ARTEX Exploration Chain HTML (Exploration Chain)
+        # Build Exploration Chain HTML (Exploration Chain)
         trace_list = getattr(session, "trace", []) or []
         chain_steps_html = f"""
         <div style="background:#0B1324; border-left:3px solid #38BDF8; padding:8px 10px; border-radius:5px; margin-bottom:7px;">
@@ -2829,7 +2829,7 @@ class AiDastStudioWindow(QMainWindow):
         self.status_lbl.setStyleSheet("color: #10B981; font-size: 11px; font-weight: 700;")
 
     # ----------------------------------------------------------------------- #
-    # ARTEX LLM Pool Management (/system/llm/) & Policy Intercept Methods
+    # LLM Pool Management (/system/llm/) & Policy Intercept Methods
     # ----------------------------------------------------------------------- #
 
     def _refresh_llm_pool_ui(self) -> None:
@@ -2905,7 +2905,7 @@ class AiDastStudioWindow(QMainWindow):
         self.llm_cards_browser.setHtml(
             f"<div style='font-family:Segoe UI,sans-serif;'>"
             f"<div style='color:#94A3B8; font-size:11.5px; margin-bottom:8px;'>"
-            f"💡 <b>Cơ chế ARTEX LLM Pool:</b> Khi Model chính gặp lỗi giới hạn tốc độ (HTTP 429) hoặc quá thời gian chờ, "
+            f"💡 <b>Cơ chế Cụm LLM Pool:</b> Khi Model chính gặp lỗi giới hạn tốc độ (HTTP 429) hoặc quá thời gian chờ, "
             f"hệ thống tự động ngắt mạch (Circuit Breaker) Model đó trong {pool.get('cooldown_seconds', 60)}s và chuyển sang Model dự phòng có độ ưu tiên cao tiếp theo."
             f"</div>{cards_html}</div>"
         )
@@ -2979,7 +2979,7 @@ class AiDastStudioWindow(QMainWindow):
         return """
         <div style="font-family:'Segoe UI',sans-serif; line-height:1.5;">
             <div style="background:#111827; border:1px solid #1E293B; border-radius:8px; padding:10px 14px; margin-bottom:8px;">
-                <div style="color:#38BDF8; font-weight:800; font-size:11.5px;">🛡️ CƠ CHẾ CHỐT CHẶN AN TOÀN (ARTEX POLICY GUARDRAILS & MULTI-AGENT PLAYBOOK)</div>
+                <div style="color:#38BDF8; font-weight:800; font-size:11.5px;">🛡️ CƠ CHẾ CHỐT CHẶN AN TOÀN (POLICY GUARDRAILS & MULTI-AGENT PLAYBOOK)</div>
                 <div style="color:#CBD5E1; font-size:12px; margin-top:4px;">
                     • <b>ScopeGuard:</b> Ngăn chặn tuyệt đối mọi truy vấn ra ngoài tên miền/cổng mục tiêu hoặc truy cập IP nội bộ trái phép (chống SSRF).<br>
                     • <b>ArgumentGuard:</b> Xác thực kiểu dữ liệu Pydantic cho từng công cụ; AI không thể tiêm câu lệnh hệ thống hay tự chế payload phá hoại.<br>
@@ -3023,9 +3023,9 @@ class AiDastStudioWindow(QMainWindow):
     def _render_welcome_dashboard_html(self) -> str:
         return """
         <div style="font-family:'Segoe UI',sans-serif; padding:10px; line-height:1.6;">
-            <h3 style="color:#38BDF8; margin-top:0;">👋 Chào mừng đến với AI DAST PRO · ARTEX Edition v2.5</h3>
+            <h3 style="color:#38BDF8; margin-top:0;">👋 Chào mừng đến với AI DAST PRO · Enterprise Edition v2.5</h3>
             <p style="color:#CBD5E1; font-size:13px;">
-                Hệ thống kiểm thử xâm nhập tự động tích hợp trọn vẹn tinh hoa của <b>ARTEX Autonomous Pentest Console</b>:
+                Hệ thống kiểm thử xâm nhập tự động thế hệ mới tích hợp kiến trúc Zero-Trust Guardrails:
                 <b>Quản lý cụm LLM Pool & Ngắt mạch tự động (/system/llm)</b>, <b>Đồ thị Chuỗi Suy Luận AI (Exploration Chain)</b>,
                 <b>Kiểm tra lại lỗ hổng 1-Click (Retest)</b>, <b>Bộ lọc gói tin HTTP nâng cao</b> và <b>Hàng đợi đa nhiệm</b>.
             </p>
@@ -3034,7 +3034,7 @@ class AiDastStudioWindow(QMainWindow):
                 <ol style="color:#94A3B8; font-size:12px; margin:0; padding-left:18px;">
                     <li><b>🧠 Quản lý LLM Pool (/system/llm):</b> Cấu hình nhiều mô hình AI (Llama 3.3, Qwen 3.8, Claude 3.7, DeepSeek), tự động ngắt mạch (Circuit Breaker) và chuyển đổi dự phòng (Auto-Failover).</li>
                     <li><b>🔄 Kiểm tra lại lỗ hổng (1-Click Retest):</b> Trong mục <b>Lỗ hổng & Retest</b>, bấm nút <b>🔄 Kiểm tra lại</b> để thẩm định trực tiếp xem lỗ hổng đã được vá hay vẫn còn tồn tại.</li>
-                    <li><b>🌐 Mở Web Demo (ARTEX):</b> Nhấn nút <b>🌐 Mở Web Demo (ARTEX)</b> trên thanh công cụ để trải nghiệm thêm bản Web Console giống hệt <code>artex-demo.mhtsec.com</code>!</li>
+                    <li><b>🌐 Mở Web Console:</b> Nhấn nút <b>🌐 Mở Web Console</b> trên thanh công cụ để trải nghiệm bản Web Console trực quan trên trình duyệt!</li>
                 </ol>
             </div>
         </div>

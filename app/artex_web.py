@@ -36,7 +36,7 @@ from app.tools.catalog import build_default_registry
 
 
 # --------------------------------------------------------------------------- #
-# Persistent LLM Pool State (Shared between Desktop App & ARTEX Web Console)
+# Persistent LLM Pool State (Shared between Desktop App & AI DAST Web Console)
 # --------------------------------------------------------------------------- #
 
 LLM_POOL_FILE = BASE_DIR / "runs" / "llm_pool_config.json"
@@ -219,7 +219,7 @@ class ArtexBackendState:
                     hints = surface.get("hints") or []
                     techs = surface.get("technologies") or []
 
-                    # Build Exploration Chain nodes (ARTEX Exploration Chain)
+                    # Build Exploration Chain nodes
                     chain_nodes = self._build_exploration_chain(
                         target=rep_raw.get("target", ""),
                         trace=trace,
@@ -228,11 +228,11 @@ class ArtexBackendState:
                         hints=hints,
                     )
 
-                    # Build LLM call telemetry records (ARTEX LLM Telemetry)
+                    # Build LLM call telemetry records
                     planner_info = rep_raw.get("planner") or {}
                     llm_records = self._build_llm_telemetry(rep_raw, trace, planner_info)
 
-                    # Build Policy Intercept & Approval records (ARTEX Approvals)
+                    # Build Policy Intercept & Approval records
                     approvals = self._build_approval_records(rep_raw, trace, sess_raw)
 
                     # Load or generate AI Post-Scan Result Analysis (AI Deep Dive)
@@ -478,8 +478,8 @@ class ArtexBackendState:
                 scope = build_scope_policy(
                     target,
                     allow_private=True,
-                    authorized_by="ARTEX Web Console",
-                    authorization_note=f"ARTEX Console Task {scan_id}",
+                    authorized_by="AI DAST Web Console",
+                    authorization_note=f"Web Console Task {scan_id}",
                 )
                 perms = PermissionSet()
                 perms.grant(Capability.PRIVATE_NETWORK)
@@ -710,7 +710,7 @@ ARTEX_HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ARTEX — AI DAST PRO · Bảng Điều Khiển Kiểm Thử Xâm Nhập Tự Động</title>
+<title>AI DAST PRO · Bảng Điều Khiển Kiểm Thử Xâm Nhập Tự Động</title>
 <style>
 :root {
   --bg: #090d16;
@@ -1000,7 +1000,7 @@ pre {
   <div class="brand">
     <div class="brand-logo">A</div>
     <div>
-      <div class="brand-title">ARTEX · DAST</div>
+      <div class="brand-title">AI DAST · PRO</div>
       <div class="brand-sub">Autonomous Pentest Console v2.5</div>
     </div>
   </div>
@@ -1812,7 +1812,7 @@ function renderLlmPoolPage() {
   return `
     <div class="card" style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div>
-        <h3 style="font-size:15px;">🧠 Quản Lý Cụm Mô Hình LLM & Ngắt Mạch Tự Động (ARTEX /system/llm/)</h3>
+        <h3 style="font-size:15px;">🧠 Quản Lý Cụm Mô Hình LLM & Ngắt Mạch Tự Động (/system/llm/)</h3>
         <div style="font-size:12px;color:var(--muted);margin-top:3px;">
           Khi mô hình chính gặp lỗi HTTP 429 / Timeout, hệ thống tự động kích hoạt <b>Circuit Breaker (Ngắt mạch tạm thời ${pool.cooldown_seconds}s)</b> và chuyển tiếp không gián đoạn sang mô hình dự phòng kế tiếp.
         </div>
@@ -1946,7 +1946,7 @@ window.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
     showModal(`
-      <h3 style="margin-bottom:12px;">⌘ Bảng Lệnh Nhanh (ARTEX Command Palette)</h3>
+      <h3 style="margin-bottom:12px;">⌘ Bảng Lệnh Nhanh (Command Palette)</h3>
       <div style="display:flex;flex-direction:column;gap:8px;">
         <button class="btn" onclick="closeModal();navigate('dashboard')">📊 Đi tới Bảng điều khiển (Dashboard)</button>
         <button class="btn" onclick="closeModal();navigate('llm')">🧠 Đi tới Quản lý Cụm Mô hình AI (/system/llm)</button>
@@ -1967,7 +1967,7 @@ setInterval(refreshState, 4000);
 
 
 # --------------------------------------------------------------------------- #
-# HTTP Request Handler for ARTEX Web Console
+# HTTP Request Handler for AI DAST Web Console
 # --------------------------------------------------------------------------- #
 
 class ArtexRequestHandler(BaseHTTPRequestHandler):
@@ -2122,7 +2122,7 @@ _WEB_SERVER_LOCK = threading.Lock()
 
 
 def ensure_artex_web_server(port: int = 8788) -> str:
-    """Start the ARTEX Web Console server in a background daemon thread if not running."""
+    """Start the AI DAST Web Console server in a background daemon thread if not running."""
     global _WEB_SERVER_URL
     with _WEB_SERVER_LOCK:
         if _WEB_SERVER_URL:
@@ -2139,7 +2139,7 @@ def ensure_artex_web_server(port: int = 8788) -> str:
 
 def main() -> None:
     url = ensure_artex_web_server(8788)
-    print(f"🌐 ARTEX Web Demo Console đang chạy tại: {url}")
+    print(f"🌐 AI DAST Web Console đang chạy tại: {url}")
     webbrowser.open(url)
     try:
         while True:

@@ -278,7 +278,7 @@ async function triggerAiAnalyzeFinding(url, category, title, severity, cwe, owas
 
   await new Promise(r => setTimeout(r, 450));
   const simAnalysis = {{
-    engine: "ARTEX AI Deep Dive (Llama-3.3-70b via LLM Pool)",
+    engine: "AI DAST Deep Dive (Llama-3.3-70b via LLM Pool)",
     latency_ms: Math.floor(Math.random() * 120) + 210,
     root_cause: `Ứng dụng tại ${{url}} chưa áp dụng kiểm tra nghiêm ngặt đối với ${{category}} (${{cwe || 'CWE'}}) dẫn đến nguy cơ vượt qua lớp kiểm soát an toàn.`,
     exploit_scenario: `Kẻ tấn công có thể gửi các gói tin đặc chế nhắm vào tham số liên quan để khai thác lỗ hổng ${{title}}, gây rò rỉ dữ liệu hoặc thay đổi hành vi xử lý của hệ thống.`,
