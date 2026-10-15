@@ -12,21 +12,12 @@
 
 ---
 
-## 🌐 Trải Nghiệm Demo Trực Tiếp (Live Demo & Web Console)
+## 🌐 Trải Nghiệm Demo & Tham Chiếu Thiết Kế
 
-> 🚀 **DÙNG THỬ NGAY TRÊN TRÌNH DUYỆT (KHÔNG CẦN CÀI ĐẶT / TẢI VỀ):**  
-> 👉 **[https://nacterr.github.io/ai-dast-core/](https://nacterr.github.io/ai-dast-core/)**  
-> *(Chạy 100% online trên GitHub Pages, tương tác đầy đủ: Quét Demo, Phân tích AI, Retest, Quản lý Cụm LLM Pool).*
-
-Bạn có thể chạy thử nghiệm và tương tác với giao diện AI DAST Web Console và Desktop GUI thông qua các chế độ:
-
-| Chế độ | Đường dẫn / Lệnh khởi chạy | Mô tả |
+| Mục | Liên kết | Mô tả |
 | :--- | :--- | :--- |
-| **🌐 Online Web Demo** | **[https://nacterr.github.io/ai-dast-core/](https://nacterr.github.io/ai-dast-core/)** | **Xem ngay trên web** không cần cài đặt bất kỳ phần mềm nào. Tương tác đầy đủ tính năng! |
-| **🌐 Local Web Console** | `http://127.0.0.1:8788/` | Chạy file `chay-web.bat` hoặc lệnh `python -m app.artex_web`. Giao diện Web Console cục bộ. |
-| **🌍 Online Public Tunnel** | `https://xxxx.trycloudflare.com` | Chạy file `start-online.bat`. Tự động tạo đường hầm HTTPS Cloudflare công khai toàn cầu. |
-| **🖥️ Native Desktop GUI** | Mở ứng dụng Desktop | Chạy file `chay-app.bat` hoặc lệnh `python -m app.desktop`. Giao diện PySide6 chuyên nghiệp cho Security Analysts. |
-| **🔗 Tham chiếu Thiết kế** | [ARTEX Demo Reference](https://artex-demo.mhtsec.com/system/llm/) | Dự án lấy cảm hứng kiến trúc và tham chiếu thiết kế trực quan từ ARTEX (MHTSec) về Quản lý Cụm LLM Pool & DAST. |
+| **🚀 Trải Nghiệm Web Demo** | **[https://nacterr.github.io/ai-dast-core/](https://nacterr.github.io/ai-dast-core/)** | Dùng thử trực tiếp trên trình duyệt (không cần cài đặt hay tải về). Tương tác đầy đủ các tính năng! |
+| **🔗 Tham Chiếu Thiết Kế** | [ARTEX Demo Reference](https://artex-demo.mhtsec.com/system/llm/) | Dự án lấy cảm hứng kiến trúc và tham chiếu thiết kế trực quan từ ARTEX (MHTSec) về Quản lý Cụm LLM Pool & DAST. |
 
 ---
 
