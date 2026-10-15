@@ -13,7 +13,8 @@ venv/
 runs/
 *.log
 
-# Large external binaries (over 50MB)
+# Binary executables and large tools
+*.exe
 tools/cloudflared.exe
 
 # Local configuration and private API keys
@@ -26,6 +27,7 @@ tools/cloudflared.exe
 # Editor and agent workspaces
 .agents/
 .dshskills/
+skills-lock.json
 .vscode/
 .idea/
 .DS_Store
