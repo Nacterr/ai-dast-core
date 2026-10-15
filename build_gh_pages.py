@@ -1,32 +1,65 @@
 import json
-import re
 from pathlib import Path
 from app.artex_web import BACKEND, load_llm_pool, ARTEX_HTML
 
 def build_github_pages_html():
-    raw_tasks = BACKEND.list_tasks()[:4]
+    raw_tasks = BACKEND.list_tasks()[:2]
     
-    demo_targets = [
-        ("scan_shop_01", "http://testphp.vulnweb.com", "Demo Shop E-Commerce Target"),
-        ("scan_api_02", "https://api.staging-store.io", "FinTech Cloud API Gateway"),
-        ("scan_auth_03", "https://auth.internal-corp.net", "Corporate Identity & SSO Portal"),
-        ("scan_crm_04", "https://crm.cloud-enterprise.tech", "Customer Portal & CRM"),
+    demo_configs = [
+        {
+            "id": "scan_shop_demo",
+            "target": "http://testphp.vulnweb.com",
+            "planner": "ai-master-planner-v3 (LLM Pool)",
+            "summary": "Chiến dịch trinh sát tự động mục tiêu Demo Shop. AI Planner đã thực thi 14 bước thăm dò, phát hiện 18 lỗ hổng bảo mật.",
+            "duration_s": 28.4,
+            "status": "completed",
+            "score": 76,
+            "grade": "C+",
+            "color": "#F43F5E",
+        },
+        {
+            "id": "scan_api_gateway",
+            "target": "https://api.staging-store.io",
+            "planner": "scripted-recon-v2",
+            "summary": "Chiến dịch đánh giá bề mặt tấn công FinTech Cloud API Gateway. Phát hiện 6 điểm yếu về cấu hình CORS và thiếu Strict Transport Security.",
+            "duration_s": 14.8,
+            "status": "completed",
+            "score": 88,
+            "grade": "B+",
+            "color": "#38BDF8",
+        }
     ]
     
-    for idx, (sid, starget, sdesc) in enumerate(demo_targets):
+    for idx, cfg in enumerate(demo_configs):
         if idx < len(raw_tasks):
             t = raw_tasks[idx]
-            t["id"] = sid
-            t["target"] = starget
-            t["summary"] = f"{sdesc} · Quét bảo mật toàn diện phát hiện {t.get('findings_count', 0)} lỗ hổng."
+            t["id"] = cfg["id"]
+            t["target"] = cfg["target"]
+            t["planner"] = cfg["planner"]
+            t["summary"] = cfg["summary"]
+            t["duration_s"] = cfg["duration_s"]
+            t["status"] = cfg["status"]
+            
+            if not t.get("ai_analysis"):
+                t["ai_analysis"] = {}
+            t["ai_analysis"]["score_info"] = {
+                "score": cfg["score"],
+                "grade": cfg["grade"],
+                "color": cfg["color"],
+                "summary": cfg["summary"],
+            }
+            
             for f in t.get("findings", []):
                 if "127.0.0.1" in str(f.get("url", "")):
-                    f["url"] = f.get("url", "").replace("http://127.0.0.1:8099", starget)
+                    f["url"] = f.get("url", "").replace("http://127.0.0.1:8099", cfg["target"])
                 if "127.0.0.1" in str(f.get("location", "")):
-                    f["location"] = f.get("location", "").replace("http://127.0.0.1:8099", starget)
+                    f["location"] = f.get("location", "").replace("http://127.0.0.1:8099", cfg["target"])
             for h in t.get("http_history", []):
                 if "127.0.0.1" in str(h.get("requested_url", "")):
-                    h["requested_url"] = h.get("requested_url", "").replace("http://127.0.0.1:8099", starget)
+                    h["requested_url"] = h.get("requested_url", "").replace("http://127.0.0.1:8099", cfg["target"])
+            for n in t.get("exploration_chain", []):
+                if "127.0.0.1" in str(n.get("title", "")):
+                    n["title"] = n.get("title", "").replace("http://127.0.0.1:8099", cfg["target"])
 
     pool = load_llm_pool()
     initial_state = {
@@ -34,38 +67,32 @@ def build_github_pages_html():
         "llm_pool": pool,
     }
 
-    # Prepare top announcement banner
-    demo_banner = """
-<!-- WEB DEMO HEADER BANNER -->
-<div style="background: linear-gradient(90deg, #1e1b4b, #312e81, #0f172a); color: #e0e7ff; padding: 9px 20px; font-size: 12.5px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4338ca; z-index: 999;">
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <span style="background: #4f46e5; color: #ffffff; font-weight: 800; font-size: 10.5px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px;">LIVE DEMO (GITHUB PAGES)</span>
-    <span>⚡ <b>Trải nghiệm ARTEX AI DAST Console trực tiếp trên trình duyệt</b> — Tương tác 100% không cần tải hay cài đặt môi trường.</span>
-  </div>
-  <div style="display: flex; align-items: center; gap: 14px;">
-    <a href="https://github.com/Nacterr/ai-dast-core" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-      ⭐ Star trên GitHub →
-    </a>
-  </div>
-</div>
-"""
-
+    # Use pure ARTEX_HTML without any foreign banner inside body to preserve exact layout
     html = ARTEX_HTML
-    # Insert demo banner right after <body>
-    html = html.replace("<body>", "<body>\n" + demo_banner)
 
-    # Prepare client-side mock logic script to inject before </script>
+    # Client-side engine script with clean cache reset
     client_mock_script = f"""
 // ---------------------------------------------------------------------------
-// Client-side Interactive Engine for GitHub Pages (Zero-Server Architecture)
+// Client-side Interactive Engine for GitHub Pages (Exact Original Layout)
 // ---------------------------------------------------------------------------
+const DEMO_BUILD_ID = 'build_clean_v4_two_scans';
+try {{
+  if (localStorage.getItem('ai_dast_build') !== DEMO_BUILD_ID) {{
+    localStorage.setItem('ai_dast_build', DEMO_BUILD_ID);
+    localStorage.removeItem('ai_dast_artex_state');
+  }}
+}} catch (e) {{}}
+
 const EMBEDDED_STATE = {json.dumps(initial_state, ensure_ascii=False)};
 
 function updateBadges() {{
-  document.getElementById('badge-tasks').textContent = STATE.tasks.length;
+  const bTasks = document.getElementById('badge-tasks');
+  if (bTasks) bTasks.textContent = STATE.tasks.length;
   const totalVulns = STATE.tasks.reduce((acc, t) => acc + (t.findings_count || 0), 0);
-  document.getElementById('badge-vulns').textContent = totalVulns;
-  document.getElementById('badge-llm').textContent = (STATE.llm_pool.models || []).length;
+  const bVulns = document.getElementById('badge-vulns');
+  if (bVulns) bVulns.textContent = totalVulns;
+  const bLlm = document.getElementById('badge-llm');
+  if (bLlm) bLlm.textContent = (STATE.llm_pool.models || []).length;
 }}
 
 function saveStateLocally() {{
@@ -318,14 +345,13 @@ async function updateLlmPool(action, payload = {{}}) {{
 }}
 """
 
-    # Inject client_mock_script right before </script>
     html = html.replace("</script>", client_mock_script + "\n</script>")
     
     docs_dir = Path("docs")
     docs_dir.mkdir(exist_ok=True)
     out_file = docs_dir / "index.html"
     out_file.write_text(html, encoding="utf-8")
-    print(f"✅ Generated {out_file} ({round(len(html)/1024, 1)} KB)")
+    print(f"✅ Generated clean {out_file} ({round(len(html)/1024, 1)} KB) with 2 ready-to-view scans!")
 
 if __name__ == "__main__":
     build_github_pages_html()
