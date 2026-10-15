@@ -28,6 +28,10 @@ tools/cloudflared.exe
 .agents/
 .dshskills/
 skills-lock.json
+# Local scripts
+day-len-github.bat
+
+# IDE and OS
 .vscode/
 .idea/
 .DS_Store
